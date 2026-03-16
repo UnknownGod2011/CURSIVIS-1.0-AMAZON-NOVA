@@ -4,7 +4,7 @@
 
 Goal:
 
-- Run a complete text flow using mock trigger and real Gemini response.
+- Run a complete text flow using mock trigger and real Nova response.
 
 Deliver:
 
@@ -35,7 +35,7 @@ Goal:
 Deliver:
 
 - Lasso region capture overlay
-- image payload to backend for Gemini analysis
+- image payload to backend for Nova analysis
 - pixel hex fallback when lasso is canceled
 
 ## Milestone D: Logitech Integration

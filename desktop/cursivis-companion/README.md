@@ -19,8 +19,8 @@ Act as the central runtime for selection detection, UI overlays, and backend orc
 - Smart + Guided modes with first-run onboarding selection
 - Guided action menu with AI suggestion and custom voice-command option
 - Lasso screenshot mode and pixel HEX fallback on cancel
-- Long-press hold-to-talk voice capture with Gemini transcription
-- Optional Gemini Live API realtime voice command path with fallback to buffered transcription
+- Long-press hold-to-talk voice capture with Nova transcription
+- Optional Nova 2 Sonic realtime voice command path with fallback to buffered transcription
 - Optional streaming-style partial transcription while holding (faster long prompts)
 - Text selection flow can attach a nearby screenshot context so text + image are sent together when useful
 - Intent memory persistence for action ranking
@@ -58,7 +58,7 @@ dotnet run
 - Hold `Hold to Talk`, speak, and release to send.
 - Switch Smart/Guided mode from the panel dropdown.
 - Use `More Options` on result panel to re-run with a different action.
-- Use `Take Action` on result panel to let Gemini plan live browser steps from the current page and execute them in your real current browser tab first, then fall back to the managed Cursivis browser session if needed.
+- Use `Take Action` on result panel to let Nova plan live browser steps from the current page and execute them in your real current browser tab first, then fall back to the managed Cursivis browser session if needed.
 - Use `Undo` on result panel to send a safe Ctrl+Z-style rollback to the last app/browser action when supported.
 - Use `Exit` in the demo panel for quick shutdown.
 

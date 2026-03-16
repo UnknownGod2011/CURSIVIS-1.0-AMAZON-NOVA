@@ -1,13 +1,13 @@
 # Cursivis
 
-Windows-first cursor-native AI interaction system for Logitech + Gemini.
+Windows-first cursor-native AI interaction system for Logitech + Amazon Nova.
 
 This repository is organized for parallel development of:
 
 - Logitech trigger integration (`plugin/logitech-plugin`)
 - Windows companion app (`desktop/cursivis-companion`)
 - Local browser action executor (`desktop/browser-action-agent`)
-- Gemini backend service (`backend/gemini-agent`)
+- Nova agent backend (`backend/nova-agent`)
 - Shared cross-component contracts (`shared/ipc-protocol`)
 
 ## Current Status
@@ -18,11 +18,11 @@ Companion + backend + trigger bridge are implemented for a runnable functional d
 - External trigger IPC over local WebSocket
 - Text selection capture, lasso screenshot capture, pixel HEX fallback
 - Smart/Guided modes with first-run mode selection and persisted preference
-- Gemini-backed text/image analysis with Gemini-first intent routing
+- Nova-backed text/image analysis with Nova-first intent routing
 - Text selections can optionally include a captured visual screen context, enabling combined text + image reasoning
 - Guided mode progressive menu (`...`) with dynamic context options + custom voice
 - Long-press hold-to-record voice capture + backend transcription pipeline
-- Optional Gemini Live API realtime voice path with interruption-friendly transcription fallback
+- Optional Nova 2 Sonic realtime voice path with interruption-friendly transcription fallback
 - Optional streaming-style partial transcription during long capture (`CURSIVIS_ENABLE_STREAMING_TRANSCRIPTION=true`)
 - Hybrid output behavior: always copies to clipboard; Smart mode can also auto-replace selected text for safe action types at high confidence
 - Post-result `Take Action` flow for browser-first agent execution (fill forms, check MCQs, draft/send email flows, apply generated output to live pages)
@@ -48,7 +48,7 @@ cursivis/
     cursivis-companion/
     browser-action-agent/
   backend/
-    gemini-agent/
+    nova-agent/
   shared/
     ipc-protocol/
 ```

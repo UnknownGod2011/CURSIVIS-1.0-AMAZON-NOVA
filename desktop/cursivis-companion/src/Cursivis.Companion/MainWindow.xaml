@@ -55,7 +55,7 @@
                             <TextBlock Margin="0,6,0,0"
                                        Style="{StaticResource SubtleTextStyle}"
                                        FontSize="13"
-                                       Text="Cursivis turns selection into context, hardware into intent, and Gemini into action." />
+                                       Text="Cursivis turns selection into context, hardware into intent, and Nova into action." />
                         </StackPanel>
 
                         <Border Grid.Column="1"
@@ -92,7 +92,7 @@
                             <TextBlock Margin="0,4,0,12"
                                        Style="{StaticResource SubtleTextStyle}"
                                        FontSize="12"
-                                       Text="Smart Mode lets Gemini decide. Guided Mode opens staged options." />
+                                       Text="Smart Mode lets Nova decide. Guided Mode opens staged options." />
                             <ComboBox x:Name="ModeCombo"
                                       Width="224"
                                       Style="{StaticResource GlassComboBoxStyle}"

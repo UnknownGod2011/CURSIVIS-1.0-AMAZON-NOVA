@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 
 namespace Cursivis.Companion.Services;
 
-public sealed class GeminiClient : IDisposable
+public sealed class NovaClient : IDisposable
 {
     private static readonly Regex CodeKeywordRegex = new(@"\b(function|class|const|let|var|public|private|protected|return|if\s*\(|for\s*\(|while\s*\(|try|catch|throw|await|async|import|export|console\.log|print\s*\(|SELECT\s+.+\s+FROM|INSERT\s+INTO|UPDATE\s+\w+\s+SET|DELETE\s+FROM)\b", RegexOptions.IgnoreCase | RegexOptions.Compiled);
     private static readonly Regex CodeInlineFeatureRegex = new(@"(=>|==={0,1}|!==|::|</?[a-z][^>]*>|#include\b|using\s+[A-Z][A-Za-z0-9_.]+;)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
@@ -29,7 +29,7 @@ public sealed class GeminiClient : IDisposable
 
     private readonly HttpClient _httpClient;
 
-    public GeminiClient()
+    public NovaClient()
     {
         var backendUrl = Environment.GetEnvironmentVariable("CURSIVIS_BACKEND_URL")
             ?? "http://127.0.0.1:8080";
@@ -679,7 +679,7 @@ public sealed class GeminiClient : IDisposable
                 if ((int)statusCode == 429)
                 {
                     var retry = parsed.RetryAfterSec ?? 30;
-                    return $"Gemini quota/rate limit reached for the current API key or project. Retry after about {retry} seconds, or switch to a different key/project with available quota.";
+                    return $"Nova quota/rate limit reached for the current API key or project. Retry after about {retry} seconds, or switch to a different key/project with available quota.";
                 }
 
                 return message;

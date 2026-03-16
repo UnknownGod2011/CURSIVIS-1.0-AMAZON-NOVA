@@ -5,7 +5,7 @@ namespace Cursivis.Companion.Services;
 
 public sealed class VoiceCommandPromptService
 {
-    private readonly GeminiClient _geminiClient;
+    private readonly NovaClient _NovaClient;
     private readonly VoiceCaptureService _voiceCaptureService;
     private readonly bool _enableStreamingTranscription;
     private readonly bool _requireVoiceConfirmation;
@@ -15,9 +15,9 @@ public sealed class VoiceCommandPromptService
     private readonly TimeSpan _autoStopSilenceDuration;
     private readonly TimeSpan _initialSpeechTimeout;
 
-    public VoiceCommandPromptService(GeminiClient geminiClient, VoiceCaptureService voiceCaptureService)
+    public VoiceCommandPromptService(NovaClient NovaClient, VoiceCaptureService voiceCaptureService)
     {
-        _geminiClient = geminiClient;
+        _NovaClient = NovaClient;
         _voiceCaptureService = voiceCaptureService;
         _enableStreamingTranscription = ParseBoolEnv("CURSIVIS_ENABLE_STREAMING_TRANSCRIPTION", defaultValue: false);
         _requireVoiceConfirmation = ParseBoolEnv("CURSIVIS_VOICE_CONFIRM", defaultValue: false);
@@ -181,7 +181,7 @@ public sealed class VoiceCommandPromptService
 
                     try
                     {
-                        var candidate = await _geminiClient.TranscribeVoiceAsync(snapshot, "audio/wav", CancellationToken.None);
+                        var candidate = await _NovaClient.TranscribeVoiceAsync(snapshot, "audio/wav", CancellationToken.None);
                         if (!string.IsNullOrWhiteSpace(candidate))
                         {
                             partialTranscript = candidate;
@@ -280,7 +280,7 @@ public sealed class VoiceCommandPromptService
     {
         try
         {
-            return await _geminiClient.TranscribeVoiceAsync(captured, mimeType, CancellationToken.None);
+            return await _NovaClient.TranscribeVoiceAsync(captured, mimeType, CancellationToken.None);
         }
         catch
         {

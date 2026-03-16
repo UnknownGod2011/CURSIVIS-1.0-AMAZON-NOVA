@@ -1,7 +1,7 @@
 {
-  "name": "gemini-agent",
+  "name": "nova-agent",
   "version": "1.0.0",
-  "description": "Cursivis Gemini backend service",
+  "description": "Cursivis Amazon Nova backend service",
   "type": "module",
   "main": "src/server.js",
   "scripts": {
@@ -10,14 +10,16 @@
     "test": "node --test tests/**/*.test.js"
   },
   "keywords": [
-    "gemini",
+    "amazon-nova",
+    "bedrock",
     "express",
     "cursivis"
   ],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@google/genai": "^1.44.0",
+    "@aws-sdk/client-bedrock-runtime": "^3.840.0",
+    "@aws-sdk/credential-providers": "^3.840.0",
     "ajv": "^8.18.0",
     "ajv-formats": "^3.0.1",
     "express": "^5.2.1",

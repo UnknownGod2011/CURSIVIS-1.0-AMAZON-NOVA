@@ -5,7 +5,7 @@ Local Playwright-powered browser executor used by the companion's `Take Action` 
 ## Purpose
 
 - Maintain a managed browser session for browser-first agent tasks
-- Inspect live page context for Gemini planning
+- Inspect live page context for Nova planning
 - Execute safe structured browser steps returned by the backend
 
 ## Endpoints

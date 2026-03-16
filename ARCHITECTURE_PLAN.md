@@ -7,7 +7,7 @@ Cursivis must deliver a live, runnable Windows demo where Logitech-triggered int
 Primary competitions:
 
 - Logitech DevStudio 2026
-- Gemini Live Agent Challenge (UI Navigator)
+- Amazon Nova AI Hackathon
 
 Primary demo KPI:
 
@@ -34,7 +34,7 @@ Primary demo KPI:
 - Manage onboarding/settings/intent memory
 - Call backend and render response UI
 
-### C. Gemini Agent Backend (`backend/gemini-agent`)
+### C. Nova Agent Backend (`backend/nova-agent`)
 
 - Runtime: Node.js (Express) for fast hackathon iteration
 - Role:
@@ -61,7 +61,7 @@ Primary demo KPI:
 - captures selected text
 - shows orb: `Analyzing selection...`
 4. Companion sends request to backend `/api/intent`.
-5. Backend runs Gemini summarize action and returns structured JSON.
+5. Backend runs Nova 2 Lite summarize action and returns structured JSON.
 6. Companion copies `result` to clipboard.
 7. Orb shows success; expand panel displays full output.
 
@@ -119,7 +119,7 @@ Used for:
 
 ## 7. Security and Reliability
 
-- Backend API key never hardcoded in companion; only backend holds Gemini key.
+- AWS credentials never hardcoded in companion; only backend holds AWS credentials.
 - Companion calls backend with local config URL + auth token support.
 - Strict schema validation on backend input/output.
 - Timeouts:
@@ -153,7 +153,7 @@ Local demo topology:
 Competition demo topology:
 
 - Logitech plugin replaces mock trigger sender.
-- Backend deployed to Google Cloud Run.
+- Backend deployed to AWS (ECS/App Runner/EC2).
 
 ## 10. Implementation Phases
 
@@ -173,7 +173,7 @@ Competition demo topology:
 ## Phase 3: Backend MVP
 
 - `/health` and `/api/intent`
-- Gemini text summarize action
+- Nova 2 Lite text summarize action
 - Structured response with confidence + alternatives
 
 ## Phase 4: Plugin Integration
@@ -198,7 +198,7 @@ MVP-1 is accepted when all are true:
 
 - Triggering produces visible orb state changes
 - Selected text is detected from at least one external app (Notepad/Chrome)
-- Backend returns real Gemini-generated summary
+- Backend returns real Nova-generated summary
 - Result is copied to clipboard automatically
 - Expand panel shows full result text
 - No mocked AI output in the success path

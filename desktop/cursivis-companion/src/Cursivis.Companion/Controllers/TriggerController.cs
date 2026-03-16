@@ -28,7 +28,7 @@ public sealed class TriggerController : IDisposable
     private readonly OrbOverlayWindow _orbOverlayWindow;
     private readonly ResultPanelWindow _resultPanelWindow;
     private readonly ClipboardService _clipboardService;
-    private readonly GeminiClient _geminiClient;
+    private readonly NovaClient _NovaClient;
     private readonly BrowserAutomationClient _browserAutomationClient;
     private readonly ExtensionAutomationClient _extensionAutomationClient;
     private readonly ActiveBrowserAutomationService _activeBrowserAutomationService;
@@ -57,7 +57,7 @@ public sealed class TriggerController : IDisposable
         OrbOverlayWindow orbOverlayWindow,
         ResultPanelWindow resultPanelWindow,
         ClipboardService clipboardService,
-        GeminiClient geminiClient,
+        NovaClient NovaClient,
         BrowserAutomationClient browserAutomationClient,
         ExtensionAutomationClient extensionAutomationClient,
         ActiveBrowserAutomationService activeBrowserAutomationService,
@@ -73,7 +73,7 @@ public sealed class TriggerController : IDisposable
         _orbOverlayWindow = orbOverlayWindow;
         _resultPanelWindow = resultPanelWindow;
         _clipboardService = clipboardService;
-        _geminiClient = geminiClient;
+        _NovaClient = NovaClient;
         _browserAutomationClient = browserAutomationClient;
         _extensionAutomationClient = extensionAutomationClient;
         _activeBrowserAutomationService = activeBrowserAutomationService;
@@ -334,7 +334,7 @@ public sealed class TriggerController : IDisposable
         var textVisualContext = !string.IsNullOrWhiteSpace(selectedImageBase64) && !string.IsNullOrWhiteSpace(selectedImageMimeType)
             ? (ImageBase64: selectedImageBase64, ImageMimeType: selectedImageMimeType)
             : TryCaptureTextVisualContext(cursor);
-        var suggestion = await _geminiClient.SuggestTextActionsAsync(
+        var suggestion = await _NovaClient.SuggestTextActionsAsync(
             selectedText,
             mode,
             _windowFocusTracker.LastExternalProcessName,
@@ -362,7 +362,7 @@ public sealed class TriggerController : IDisposable
             _orbOverlayWindow.SetState(OrbState.Processing, "Analyzing selection...");
         }
 
-        var response = await _geminiClient.AnalyzeTextAsync(
+        var response = await _NovaClient.AnalyzeTextAsync(
             selectedText,
             actionHint,
             mode,
@@ -500,7 +500,7 @@ public sealed class TriggerController : IDisposable
         CancellationToken cancellationToken)
     {
         var mode = ModeToProtocol(_interactionMode);
-        var suggestion = await _geminiClient.SuggestImageActionsAsync(
+        var suggestion = await _NovaClient.SuggestImageActionsAsync(
             imageBase64,
             imageMimeType,
             mode,
@@ -527,7 +527,7 @@ public sealed class TriggerController : IDisposable
             _orbOverlayWindow.SetState(OrbState.Processing, "Analyzing image...");
         }
 
-        var response = await _geminiClient.AnalyzeImageAsync(
+        var response = await _NovaClient.AnalyzeImageAsync(
             imageBase64,
             imageMimeType,
             actionHint,
@@ -596,7 +596,7 @@ public sealed class TriggerController : IDisposable
             return new ActionDecision(selectedAction, voiceCommand, selectedAction);
         }
 
-        // Smart mode: Gemini decides from the selection context. Do not force the suggested action.
+        // Smart mode: Nova decides from the selection context. Do not force the suggested action.
         return new ActionDecision(null, voiceCommand, bestAction);
     }
 
@@ -1349,7 +1349,7 @@ public sealed class TriggerController : IDisposable
 
         if (string.Equals(_lastSelectionContext?.Kind, "image", StringComparison.OrdinalIgnoreCase))
         {
-            return await _geminiClient.AnalyzeImageAsync(
+            return await _NovaClient.AnalyzeImageAsync(
                 _lastSelectionContext!.ImageBase64!,
                 _lastSelectionContext.ImageMimeType!,
                 actionHint,
@@ -1360,7 +1360,7 @@ public sealed class TriggerController : IDisposable
                 cancellationToken);
         }
 
-        return await _geminiClient.AnalyzeTextAsync(
+        return await _NovaClient.AnalyzeTextAsync(
             _lastSelectionContext!.Text!,
             actionHint,
             mode,
@@ -1404,7 +1404,7 @@ public sealed class TriggerController : IDisposable
         string? executionInstruction,
         CancellationToken cancellationToken)
     {
-        return await _geminiClient.PlanBrowserActionAsync(
+        return await _NovaClient.PlanBrowserActionAsync(
             new BrowserActionPlanRequest
             {
                 OriginalText = _lastSelectionContext?.Text ?? string.Empty,
