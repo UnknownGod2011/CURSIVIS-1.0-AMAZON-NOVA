@@ -1,8 +1,14 @@
 import http from "node:http";
 import { createApp } from "./app.js";
 import { attachSonicGateway } from "./services/novaVoice.js";
+import { validateBedrockConnection } from "./startupCheck.js";
 
 const port = Number(process.env.PORT || 8080);
+
+// ── Startup validation ────────────────────────────────────────────────────────
+await validateBedrockConnection();
+
+// ── Server ────────────────────────────────────────────────────────────────────
 const app = createApp();
 const server = http.createServer(app);
 attachSonicGateway(server);

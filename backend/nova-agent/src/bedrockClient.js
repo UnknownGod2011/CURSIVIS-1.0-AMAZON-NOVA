@@ -2,6 +2,12 @@
  * bedrockClient.js
  * Singleton Amazon Bedrock Runtime client for Nova 2 Lite (text/multimodal).
  * Uses @aws-sdk/client-bedrock-runtime with the Converse API.
+ *
+ * Env vars (BEDROCK_* take priority, NOVA_* kept for legacy compat):
+ *   AWS_REGION                  — defaults to eu-north-1
+ *   BEDROCK_TEXT_MODEL_ID       — Nova 2 Lite model ID
+ *   BEDROCK_VOICE_MODEL_ID      — Nova 2 Sonic model ID
+ *   BEDROCK_EMBEDDING_MODEL_ID  — Embedding model ID
  */
 
 import {
@@ -11,7 +17,7 @@ import {
 } from "@aws-sdk/client-bedrock-runtime";
 import { fromEnv } from "@aws-sdk/credential-providers";
 
-const REGION = process.env.AWS_REGION || "us-east-1";
+const REGION = process.env.AWS_REGION || "eu-north-1";
 
 let _client = null;
 

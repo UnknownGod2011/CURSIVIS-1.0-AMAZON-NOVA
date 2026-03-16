@@ -38,7 +38,7 @@
   <rect x="34" y="30" width="1532" height="860" rx="32" ry="32" fill="none" stroke="url(#accent)" stroke-width="2" opacity="0.55"/>
 
   <text x="70" y="88" class="title">Cursivis Architecture</text>
-  <text x="70" y="122" class="subtitle">Selection = Context, Trigger = Intent, Gemini = Intelligence</text>
+  <text x="70" y="122" class="subtitle">Selection = Context, Trigger = Intent, Nova = Intelligence</text>
 
   <rect x="70" y="165" width="330" height="250" class="box"/>
   <text x="100" y="208" class="section">User Input Surface</text>
@@ -55,21 +55,21 @@
   <text x="500" y="244" class="label">WPF desktop orchestrator</text>
   <text x="500" y="276" class="body">- Captures text, lasso region, and fallback screen context</text>
   <text x="500" y="304" class="body">- Shows orb, result panel, guided menu, and voice UI</text>
-  <text x="500" y="332" class="body">- Sends multimodal requests to Gemini backend</text>
+  <text x="500" y="332" class="body">- Sends multimodal requests to Nova Agent backend</text>
   <text x="500" y="360" class="body">- Applies safe insert/replace flows locally</text>
   <text x="500" y="388" class="body">- Invokes Take Action only after user confirmation</text>
   <text x="500" y="434" class="small">desktop/cursivis-companion</text>
 
   <rect x="960" y="165" width="500" height="340" class="box"/>
-  <text x="990" y="208" class="section">Gemini Backend on Google Cloud</text>
-  <text x="990" y="244" class="label">Node.js service on Cloud Run</text>
-  <text x="990" y="276" class="body">- Smart-mode contextual reasoning with Gemini</text>
+  <text x="990" y="208" class="section">Nova Agent on AWS Bedrock</text>
+  <text x="990" y="244" class="label">Node.js service on AWS (ECS / EC2)</text>
+  <text x="990" y="276" class="body">- Smart-mode contextual reasoning with Nova 2 Lite</text>
   <text x="990" y="304" class="body">- Guided-mode dynamic option generation</text>
   <text x="990" y="332" class="body">- Image + text multimodal understanding</text>
-  <text x="990" y="360" class="body">- Voice transcription and live interaction support</text>
+  <text x="990" y="360" class="body">- Voice transcription and Nova 2 Sonic live streaming</text>
   <text x="990" y="388" class="body">- Browser action planning for forms, email, and UI tasks</text>
   <text x="990" y="416" class="body">- Health endpoint and deployable Docker image</text>
-  <text x="990" y="462" class="small">backend/gemini-agent + Google GenAI SDK + Cloud Run</text>
+  <text x="990" y="462" class="small">backend/nova-agent + AWS SDK v3 + Amazon Bedrock</text>
 
   <rect x="70" y="555" width="500" height="250" class="box"/>
   <text x="100" y="598" class="section">Current Browser Execution Layer</text>

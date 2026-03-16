@@ -24,7 +24,10 @@ import {
 } from "./contentClassifier.js";
 
 // ─── Model IDs ────────────────────────────────────────────────────────────────
-const DEFAULT_LITE_MODEL = process.env.NOVA_LITE_MODEL || "us.amazon.nova-2-lite-v1:0";
+const DEFAULT_LITE_MODEL =
+  process.env.BEDROCK_TEXT_MODEL_ID ||
+  process.env.NOVA_LITE_MODEL ||
+  "amazon.nova-lite-v1:0";
 
 // ─── System instructions (same semantics as before) ───────────────────────────
 const EXECUTION_SYSTEM_INSTRUCTION = [

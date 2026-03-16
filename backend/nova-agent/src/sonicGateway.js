@@ -3,7 +3,7 @@
  * WebSocket gateway bridging the companion app to Amazon Nova 2 Sonic
  * via the Bedrock InvokeModelWithBidirectionalStream API.
  *
- * Drop-in replacement for liveGateway.js — same WS message protocol,
+ * Drop-in re-export shim — same WS message protocol,
  * same path (/live), same event types the companion expects.
  *
  * Nova 2 Sonic event flow (per AWS docs):
@@ -21,7 +21,7 @@ import {
   InvokeModelWithBidirectionalStreamCommand
 } from "./bedrockClient.js";
 
-const SONIC_MODEL = process.env.NOVA_SONIC_MODEL || "amazon.nova-2-sonic-v1:0";
+const SONIC_MODEL = process.env.BEDROCK_VOICE_MODEL_ID || process.env.NOVA_SONIC_MODEL || "amazon.nova-2-sonic-v1:0";
 const LIVE_PATH   = process.env.CURSIVIS_LIVE_VOICE_PATH || "/live";
 
 const SYSTEM_PROMPT =
