@@ -148,7 +148,7 @@ Local demo topology:
 
 - Companion app (WPF) runs on Windows desktop.
 - Mock trigger button window sends trigger events over local WebSocket.
-- Backend service runs locally (dev) or on Cloud Run (demo/stage/prod).
+- Backend service runs locally (dev) or on AWS App Runner (demo/stage/prod).
 
 Competition demo topology:
 

@@ -1,7 +1,10 @@
 param(
     [switch]$WithBridge,
-    [string]$ApiKey,
-    [string[]]$ApiKeys,
+    [string]$AwsAccessKeyId,
+    [string]$AwsSecretAccessKey,
+    [string]$AwsRegion = "us-east-1",
+    [string]$NovaLiteModel = "us.amazon.nova-2-lite-v1:0",
+    [string]$NovaSonicModel = "amazon.nova-2-sonic-v1:0",
     [string]$BackendUrl = "http://127.0.0.1:8080",
     [switch]$EnableStreamingTranscription,
     [switch]$EnableAutoReplace,
@@ -18,105 +21,56 @@ $ErrorActionPreference = "Stop"
 
 if ($Help) {
     Write-Host "Usage:"
-    Write-Host "  powershell -ExecutionPolicy Bypass -File .\scripts\run-demo.ps1 [-WithBridge] [-ApiKey <KEY>] [-ApiKeys <KEY1,KEY2,...>] [-BackendUrl <URL>] [-EnableStreamingTranscription] [-EnableAutoReplace] [-AutoReplaceConfidence <0-1>] [-EnableManagedBrowserFallback] [-WarmManagedBrowser] [-SkipNpmInstall] [-SkipCleanup] [-NoHealthCheck]"
+    Write-Host "  powershell -ExecutionPolicy Bypass -File .\scripts\run-demo.ps1 [-WithBridge] [-AwsAccessKeyId <KEY>] [-AwsSecretAccessKey <SECRET>] [-AwsRegion us-east-1] [-BackendUrl <URL>] [-EnableStreamingTranscription] [-EnableAutoReplace]"
     return
 }
 
 $root = Split-Path -Parent $PSScriptRoot
-$backendDir = Join-Path $root "backend\gemini-agent"
+$backendDir = Join-Path $root "backend\nova-agent"
 $browserAgentDir = Join-Path $root "desktop\browser-action-agent"
 $extensionBridgeDir = Join-Path $root "desktop\browser-native-host"
-$extensionBridgeLauncher = Join-Path $extensionBridgeDir "launch.cmd"
 $companionProject = Join-Path $root "desktop\cursivis-companion\src\Cursivis.Companion\Cursivis.Companion.csproj"
 $bridgeProject = Join-Path $root "plugin\logitech-plugin\src\Cursivis.Logitech.Bridge\Cursivis.Logitech.Bridge.csproj"
 
-Write-Host "Starting Cursivis demo stack..."
+Write-Host "Starting Cursivis Nova demo stack..."
 Write-Host "Backend: $backendDir"
 Write-Host "Browser action agent: $browserAgentDir"
-Write-Host "Extension bridge host: $extensionBridgeDir"
 Write-Host "Companion project: $companionProject"
 
 if (-not $SkipCleanup) {
     try {
         Write-Host "Running pre-launch cleanup..."
         & powershell -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot "stop-demo.ps1") | Out-Host
-    }
-    catch {
+    } catch {
         Write-Warning "Cleanup step failed: $($_.Exception.Message)"
     }
 }
 
-if ($ApiKey) {
-    $env:GOOGLE_API_KEY = $ApiKey
+# Resolve AWS credentials (param > env)
+$resolvedKeyId     = if ($AwsAccessKeyId)     { $AwsAccessKeyId }     else { $env:AWS_ACCESS_KEY_ID }
+$resolvedSecret    = if ($AwsSecretAccessKey) { $AwsSecretAccessKey } else { $env:AWS_SECRET_ACCESS_KEY }
+$resolvedRegion    = if ($AwsRegion)          { $AwsRegion }          else { $env:AWS_REGION ?? "us-east-1" }
+
+if (-not $resolvedKeyId -or -not $resolvedSecret) {
+    Write-Warning "AWS credentials not set. Set -AwsAccessKeyId / -AwsSecretAccessKey or set AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY env vars. Nova calls will fail without them."
 }
 
-if ($ApiKeys -and $ApiKeys.Count -gt 0) {
-    $env:GOOGLE_API_KEYS = ($ApiKeys -join ",")
-}
+$keyIdEscaped     = ($resolvedKeyId     ?? "").Replace("'", "''")
+$secretEscaped    = ($resolvedSecret    ?? "").Replace("'", "''")
+$regionEscaped    = $resolvedRegion.Replace("'", "''")
+$liteModelEscaped = $NovaLiteModel.Replace("'", "''")
+$sonicModelEscaped = $NovaSonicModel.Replace("'", "''")
 
-$embeddedRotationKeys = @()
-
-$rotationKeyCandidates = New-Object System.Collections.Generic.List[string]
-
-foreach ($candidate in @($ApiKey)) {
-    if (-not [string]::IsNullOrWhiteSpace($candidate)) {
-        $rotationKeyCandidates.Add($candidate)
-    }
-}
-
-foreach ($candidate in @($env:GOOGLE_API_KEY)) {
-    if (-not [string]::IsNullOrWhiteSpace($candidate)) {
-        $rotationKeyCandidates.Add($candidate)
-    }
-}
-
-foreach ($candidate in @($ApiKeys)) {
-    if (-not [string]::IsNullOrWhiteSpace($candidate)) {
-        $rotationKeyCandidates.Add($candidate)
-    }
-}
-
-foreach ($candidate in @($env:GOOGLE_API_KEYS -split ",")) {
-    if (-not [string]::IsNullOrWhiteSpace($candidate)) {
-        $rotationKeyCandidates.Add($candidate)
-    }
-}
-
-foreach ($candidate in $embeddedRotationKeys) {
-    if (-not [string]::IsNullOrWhiteSpace($candidate)) {
-        $rotationKeyCandidates.Add($candidate)
-    }
-}
-
-$rotationKeys = @(
-    $rotationKeyCandidates |
-        ForEach-Object { "$_".Trim() } |
-        Where-Object { $_ } |
-        Select-Object -Unique
-)
-
-if ($rotationKeys.Count -eq 0) {
-    Write-Warning "GOOGLE_API_KEY is not set in this terminal. Backend Gemini calls will fail."
-}
-
-$effectiveApiKey = if ($rotationKeys.Count -gt 0) { $rotationKeys[0] } else { "" }
-$effectiveApiKeysJoined = ($rotationKeys -join ",")
-
-$apiKeyEscaped = $effectiveApiKey.Replace("'", "''")
-$apiKeysEscaped = $effectiveApiKeysJoined.Replace("'", "''")
 $backendCmdParts = @(
-    "`$env:GOOGLE_API_KEY='$apiKeyEscaped'",
-    "`$env:GOOGLE_API_KEYS='$apiKeysEscaped'",
-    "`$env:GEMINI_ROUTER_MODEL='gemini-2.5-flash-lite'",
-    "`$env:GEMINI_OPTIONS_MODEL='gemini-2.5-flash-lite'",
-    "`$env:GEMINI_FALLBACK_MODELS='gemini-2.5-flash-lite,gemini-2.0-flash'",
+    "`$env:AWS_ACCESS_KEY_ID='$keyIdEscaped'",
+    "`$env:AWS_SECRET_ACCESS_KEY='$secretEscaped'",
+    "`$env:AWS_REGION='$regionEscaped'",
+    "`$env:NOVA_LITE_MODEL='$liteModelEscaped'",
+    "`$env:NOVA_SONIC_MODEL='$sonicModelEscaped'",
     "Set-Location -LiteralPath '$backendDir'"
 )
 
-if (-not $SkipNpmInstall) {
-    $backendCmdParts += "npm install"
-}
-
+if (-not $SkipNpmInstall) { $backendCmdParts += "npm install" }
 $backendCmdParts += "npm start"
 $backendCmd = $backendCmdParts -join "; "
 $backendProcess = Start-Process powershell -ArgumentList "-NoExit", "-Command", $backendCmd -PassThru
@@ -125,11 +79,7 @@ $browserAgentCmdParts = @(
     "`$env:CURSIVIS_BROWSER_CHANNEL='chrome'",
     "Set-Location -LiteralPath '$browserAgentDir'"
 )
-
-if (-not $SkipNpmInstall) {
-    $browserAgentCmdParts += "npm install"
-}
-
+if (-not $SkipNpmInstall) { $browserAgentCmdParts += "npm install" }
 $browserAgentCmdParts += "npm start"
 $browserAgentCmd = $browserAgentCmdParts -join "; "
 $browserAgentProcess = Start-Process powershell -ArgumentList "-NoExit", "-Command", $browserAgentCmd -PassThru
@@ -156,7 +106,6 @@ if ($EnableAutoReplace) {
 
 $companionCmdParts += "dotnet run --project '$companionProject'"
 $companionCmd = $companionCmdParts -join "; "
-
 $companionProcess = Start-Process powershell -ArgumentList "-NoExit", "-Command", $companionCmd -PassThru
 
 if ($WithBridge) {
@@ -171,54 +120,25 @@ if (-not $NoHealthCheck) {
     while ((Get-Date) -lt $deadline) {
         try {
             $health = Invoke-WebRequest -UseBasicParsing "http://127.0.0.1:8080/health" -TimeoutSec 4
-            if ($health.StatusCode -eq 200) {
-                $healthOk = $true
-                Write-Host "Backend health: OK"
-                break
-            }
-        }
-        catch {
-            Start-Sleep -Milliseconds 700
-        }
+            if ($health.StatusCode -eq 200) { $healthOk = $true; Write-Host "Backend health: OK"; break }
+        } catch { Start-Sleep -Milliseconds 700 }
     }
-
-    if (-not $healthOk) {
-        Write-Warning "Backend health check did not return 200 yet. Check backend terminal output."
-    }
+    if (-not $healthOk) { Write-Warning "Backend health check did not return 200 yet. Check backend terminal output." }
 
     $browserHealthOk = $false
     $browserDeadline = (Get-Date).AddSeconds(25)
     while ((Get-Date) -lt $browserDeadline) {
         try {
             $browserHealth = Invoke-WebRequest -UseBasicParsing "http://127.0.0.1:48820/health" -TimeoutSec 4
-            if ($browserHealth.StatusCode -eq 200) {
-                $browserHealthOk = $true
-                Write-Host "Browser action agent health: OK"
-                break
-            }
-        }
-        catch {
-            Start-Sleep -Milliseconds 500
-        }
+            if ($browserHealth.StatusCode -eq 200) { $browserHealthOk = $true; Write-Host "Browser action agent health: OK"; break }
+        } catch { Start-Sleep -Milliseconds 500 }
     }
-
-    if (-not $browserHealthOk) {
-        Write-Warning "Browser action agent health check did not return 200 yet. Check browser action terminal output."
-    }
+    if (-not $browserHealthOk) { Write-Warning "Browser action agent health check did not return 200 yet." }
     elseif ($WarmManagedBrowser -and $EnableManagedBrowserFallback) {
         try {
             Invoke-WebRequest -UseBasicParsing "http://127.0.0.1:48820/ensure-browser" -Method Post -ContentType "application/json" -Body "{}" -TimeoutSec 12 | Out-Null
             Write-Host "Managed action browser session: ready"
-        }
-        catch {
-            Write-Warning "Could not warm the managed action browser session yet. It will initialize on first Take Action use."
-        }
-    }
-    elseif ($WarmManagedBrowser) {
-        Write-Host "Managed action browser warm-up skipped because current-browser-only mode is enabled"
-    }
-    else {
-        Write-Host "Managed action browser session: disabled by default and deferred until opt-in fallback use"
+        } catch { Write-Warning "Could not warm the managed action browser session yet." }
     }
 
     $extensionBridgeHealthOk = $false
@@ -226,27 +146,16 @@ if (-not $NoHealthCheck) {
     while ((Get-Date) -lt $extensionBridgeDeadline) {
         try {
             $extensionBridgeHealth = Invoke-WebRequest -UseBasicParsing "http://127.0.0.1:48830/health" -TimeoutSec 4
-            if ($extensionBridgeHealth.StatusCode -eq 200) {
-                $extensionBridgeHealthOk = $true
-                Write-Host "Extension bridge host health: OK"
-                break
-            }
-        }
-        catch {
-            Start-Sleep -Milliseconds 400
-        }
+            if ($extensionBridgeHealth.StatusCode -eq 200) { $extensionBridgeHealthOk = $true; Write-Host "Extension bridge host health: OK"; break }
+        } catch { Start-Sleep -Milliseconds 400 }
     }
-
-    if (-not $extensionBridgeHealthOk) {
-        Write-Warning "Extension bridge host health check did not return 200 yet. Check extension bridge terminal output."
-    }
+    if (-not $extensionBridgeHealthOk) { Write-Warning "Extension bridge host health check did not return 200 yet." }
 }
 
-if ($effectiveApiKey) {
-    Write-Host "Launched with API key rotation pool injected into backend process. Keys loaded: $($rotationKeys.Count)"
-}
-else {
-    Write-Host "Launched. Make sure GOOGLE_API_KEY is set for backend terminal."
+if ($resolvedKeyId) {
+    Write-Host "Launched with AWS credentials injected into backend process."
+} else {
+    Write-Host "Launched. Make sure AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are set for the backend terminal."
 }
 Write-Host "Backend PID: $($backendProcess.Id)"
 Write-Host "Browser action agent PID: $($browserAgentProcess.Id)"
