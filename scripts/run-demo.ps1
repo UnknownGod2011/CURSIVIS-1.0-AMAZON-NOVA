@@ -46,17 +46,17 @@ if (-not $SkipCleanup) {
     }
 }
 
-# Resolve AWS credentials (param > env)
-$resolvedKeyId     = if ($AwsAccessKeyId)     { $AwsAccessKeyId }     else { $env:AWS_ACCESS_KEY_ID }
-$resolvedSecret    = if ($AwsSecretAccessKey) { $AwsSecretAccessKey } else { $env:AWS_SECRET_ACCESS_KEY }
-$resolvedRegion    = if ($AwsRegion)          { $AwsRegion }          else { $env:AWS_REGION ?? "eu-north-1" }
+# Resolve AWS credentials (param > env) — PS5 compatible (no ??)
+if ($AwsAccessKeyId)     { $resolvedKeyId  = $AwsAccessKeyId }     else { $resolvedKeyId  = $env:AWS_ACCESS_KEY_ID }
+if ($AwsSecretAccessKey) { $resolvedSecret = $AwsSecretAccessKey } else { $resolvedSecret = $env:AWS_SECRET_ACCESS_KEY }
+if ($AwsRegion)          { $resolvedRegion = $AwsRegion }          else { if ($env:AWS_REGION) { $resolvedRegion = $env:AWS_REGION } else { $resolvedRegion = "eu-north-1" } }
 
 if (-not $resolvedKeyId -or -not $resolvedSecret) {
     Write-Warning "AWS credentials not set. Set -AwsAccessKeyId / -AwsSecretAccessKey or set AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY env vars. Nova calls will fail without them."
 }
 
-$keyIdEscaped     = ($resolvedKeyId     ?? "").Replace("'", "''")
-$secretEscaped    = ($resolvedSecret    ?? "").Replace("'", "''")
+if ($resolvedKeyId)  { $keyIdEscaped  = $resolvedKeyId.Replace("'", "''")  } else { $keyIdEscaped  = "" }
+if ($resolvedSecret) { $secretEscaped = $resolvedSecret.Replace("'", "''") } else { $secretEscaped = "" }
 $regionEscaped    = $resolvedRegion.Replace("'", "''")
 $liteModelEscaped = $NovaLiteModel.Replace("'", "''")
 $sonicModelEscaped = $NovaSonicModel.Replace("'", "''")
@@ -95,8 +95,9 @@ $streamingValue = if ($EnableStreamingTranscription) { "true" } else { "false" }
 $autoReplaceConfidenceInvariant = $AutoReplaceConfidence.ToString([System.Globalization.CultureInfo]::InvariantCulture)
 $managedBrowserFallbackValue = if ($EnableManagedBrowserFallback) { "true" } else { "false" }
 
+$escapedBackendUrl = $BackendUrl.Replace("'", "''")
 $companionCmdParts = @(
-    "`$env:CURSIVIS_BACKEND_URL='$($BackendUrl.Replace("'", "''"))'",
+    "`$env:CURSIVIS_BACKEND_URL='$escapedBackendUrl'",
     "`$env:CURSIVIS_ENABLE_STREAMING_TRANSCRIPTION='$streamingValue'",
     "`$env:CURSIVIS_ENABLE_MANAGED_BROWSER_FALLBACK='$managedBrowserFallbackValue'"
 )
