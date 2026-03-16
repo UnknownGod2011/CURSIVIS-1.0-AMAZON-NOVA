@@ -19,11 +19,7 @@ This unpacked extension lets Cursivis act inside the browser tab you already use
 1. Open your browser extension page.
 2. Enable developer mode.
 3. Load unpacked extension from this folder.
-4. Copy the generated extension ID.
-5. Run the installer script:
+4. Keep the extension enabled.
+5. Refresh the target Gmail / Google Form / site tab once after loading.
 
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\install-browser-bridge.ps1 -ExtensionId "<EXTENSION_ID>"
-```
-
-After that, restart the browser once so the native host connection comes up cleanly.
+For the current demo build, the extension talks to the local Cursivis bridge directly over `http://127.0.0.1:48830`, so the old native-host installer step is not required for the standard setup.

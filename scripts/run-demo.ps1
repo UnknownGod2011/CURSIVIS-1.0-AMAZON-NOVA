@@ -2,6 +2,7 @@ param(
     [switch]$WithBridge,
     [string]$ApiKey,
     [string[]]$ApiKeys,
+    [string]$BackendUrl = "http://127.0.0.1:8080",
     [switch]$EnableStreamingTranscription,
     [switch]$EnableAutoReplace,
     [double]$AutoReplaceConfidence = 0.90,
@@ -17,7 +18,7 @@ $ErrorActionPreference = "Stop"
 
 if ($Help) {
     Write-Host "Usage:"
-    Write-Host "  powershell -ExecutionPolicy Bypass -File .\scripts\run-demo.ps1 [-WithBridge] [-ApiKey <KEY>] [-ApiKeys <KEY1,KEY2,...>] [-EnableStreamingTranscription] [-EnableAutoReplace] [-AutoReplaceConfidence <0-1>] [-EnableManagedBrowserFallback] [-WarmManagedBrowser] [-SkipNpmInstall] [-SkipCleanup] [-NoHealthCheck]"
+    Write-Host "  powershell -ExecutionPolicy Bypass -File .\scripts\run-demo.ps1 [-WithBridge] [-ApiKey <KEY>] [-ApiKeys <KEY1,KEY2,...>] [-BackendUrl <URL>] [-EnableStreamingTranscription] [-EnableAutoReplace] [-AutoReplaceConfidence <0-1>] [-EnableManagedBrowserFallback] [-WarmManagedBrowser] [-SkipNpmInstall] [-SkipCleanup] [-NoHealthCheck]"
     return
 }
 
@@ -143,6 +144,7 @@ $autoReplaceConfidenceInvariant = $AutoReplaceConfidence.ToString([System.Global
 $managedBrowserFallbackValue = if ($EnableManagedBrowserFallback) { "true" } else { "false" }
 
 $companionCmdParts = @(
+    "`$env:CURSIVIS_BACKEND_URL='$($BackendUrl.Replace("'", "''"))'",
     "`$env:CURSIVIS_ENABLE_STREAMING_TRANSCRIPTION='$streamingValue'",
     "`$env:CURSIVIS_ENABLE_MANAGED_BROWSER_FALLBACK='$managedBrowserFallbackValue'"
 )
