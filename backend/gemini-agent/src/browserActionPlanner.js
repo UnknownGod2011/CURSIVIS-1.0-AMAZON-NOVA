@@ -21,6 +21,8 @@ const ALLOWED_TOOLS = new Set([
   "apply_answer_key"
 ]);
 
+const MAX_ANSWER_KEY_ENTRIES = 32;
+
 function parseJsonObject(rawText) {
   if (!rawText || !rawText.trim()) {
     return null;
@@ -82,7 +84,7 @@ function normalizeStep(step) {
         option: typeof answer?.option === "string" ? sanitizeAnswerOption(answer.option) : ""
       }))
       .filter((answer) => answer.option)
-      .slice(0, 20);
+      .slice(0, MAX_ANSWER_KEY_ENTRIES);
 
     if (answers.length > 0) {
       normalized.answers = answers;
@@ -236,16 +238,9 @@ function parseAnswerKey(resultText = "") {
     .filter(Boolean);
 
   for (const line of lines) {
-    const structuredMatch = line.match(/^(?:q(?:uestion)?\s*)?(\d+)?\s*(?:\[(.+?)\])?\s*[:.)-]\s*([^-]+?)(?:\s+-\s+.+)?$/i);
-    if (structuredMatch) {
-      const shortLabel = (structuredMatch[2] || "").trim();
-      const option = sanitizeAnswerOption(structuredMatch[3]);
-      if (option) {
-        answers.push({
-          question: shortLabel || (structuredMatch[1] ? `Question ${structuredMatch[1]}` : ""),
-          option
-        });
-      }
+    const parsedEntry = parseAnswerKeyLine(line);
+    if (parsedEntry) {
+      answers.push(parsedEntry);
       continue;
     }
 
@@ -261,7 +256,44 @@ function parseAnswerKey(resultText = "") {
     }
   }
 
-  return answers.slice(0, 12);
+  return answers.slice(0, MAX_ANSWER_KEY_ENTRIES);
+}
+
+function parseAnswerKeyLine(line = "") {
+  const bracketedMatch = line.match(/^(?:q(?:uestion)?\s*)?(\d+)?\s*(?:\[(.+?)\])\s*:\s*(.+?)(?:\s+-\s+.+)?$/i);
+  if (bracketedMatch) {
+    const question = (bracketedMatch[2] || "").trim();
+    const option = sanitizeAnswerOption(bracketedMatch[3]);
+    if (option) {
+      return {
+        question: question || (bracketedMatch[1] ? `Question ${bracketedMatch[1]}` : ""),
+        option
+      };
+    }
+  }
+
+  const numberedQuestionMatch = line.match(/^(?:q(?:uestion)?\s*)?(\d+)\s+(.+?)\s*:\s*(.+?)(?:\s+-\s+.+)?$/i);
+  if (numberedQuestionMatch) {
+    const question = (numberedQuestionMatch[2] || "").trim();
+    const option = sanitizeAnswerOption(numberedQuestionMatch[3]);
+    if (option) {
+      return {
+        question: question || `Question ${numberedQuestionMatch[1]}`,
+        option
+      };
+    }
+  }
+
+  const simpleQuestionMatch = line.match(/^(.+?)\s*:\s*(.+?)(?:\s+-\s+.+)?$/);
+  if (simpleQuestionMatch && /\b(q(?:uestion)?\s*\d+|find|term|difference|sequence|value|next term|common difference|negative term|sum)\b/i.test(simpleQuestionMatch[1])) {
+    const question = (simpleQuestionMatch[1] || "").trim();
+    const option = sanitizeAnswerOption(simpleQuestionMatch[2]);
+    if (option) {
+      return { question, option };
+    }
+  }
+
+  return null;
 }
 
 function sanitizeAnswerOption(value = "") {
@@ -272,7 +304,6 @@ function sanitizeAnswerOption(value = "") {
 
   if (
     !cleaned ||
-    /^\d{1,2}$/.test(cleaned) ||
     /^(needs user input|user input required|not applicable|n\/a|skip|cannot infer)$/i.test(cleaned)
   ) {
     return "";
@@ -358,7 +389,7 @@ function inferAnswersFromSelection({ originalText = "", resultText = "" }) {
         option: pickBestMatchingOption(answer.option, candidateOptions) || answer.option
       }))
       .filter((answer) => sanitizeAnswerOption(answer.option))
-      .slice(0, 12);
+      .slice(0, MAX_ANSWER_KEY_ENTRIES);
   }
 
   if (candidateOptions.length > 0) {
@@ -561,7 +592,7 @@ function buildFormsFallbackPlan({ originalText, resultText, voiceCommand, browse
     steps: [
       {
         tool: "apply_answer_key",
-        answers: answers.slice(0, 16),
+        answers: answers.slice(0, MAX_ANSWER_KEY_ENTRIES),
         advancePages
       }
     ]

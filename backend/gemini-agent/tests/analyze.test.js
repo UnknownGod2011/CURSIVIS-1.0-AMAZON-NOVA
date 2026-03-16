@@ -827,3 +827,56 @@ test("browser planner falls back to answer-key execution for Google Forms answer
   assert.equal(answerKeyStep.advancePages, false);
   assert.ok(answerKeyStep.answers.some((answer) => answer.option === "Paris"));
 });
+
+test("browser planner preserves multi-question answer summaries for take action", async () => {
+  const planner = createBrowserActionPlanner({
+    generateText: async () => ({
+      text: JSON.stringify({
+        goal: "form_fill",
+        summary: "No safe action.",
+        requiresConfirmation: false,
+        steps: []
+      }),
+      model: "fake-test-model",
+      latencyMs: 5,
+      usage: { inputTokens: 10, outputTokens: 10 }
+    })
+  });
+
+  const plan = await planner({
+    originalText: "Arithmetic progression worksheet selection.",
+    resultText: `Q1 Sum of 1 to 100: 5050 - (n(n+1)/2)
+Q2 4th from end: 40 - (a_18 from start)
+Q3 First negative term: 10th - (a_n < 0 for n=10)
+Q4 Term is 210: 10th - (a_n = 210 for n=10)
+Q5 Common difference: 8 - (a_18 - a_14 = 4d)
+Q6 Sequence type: an AP with d = 4 - (constant difference of 4)
+Q7 Value of p: 4 - (2b = a+c property)
+Q8 First negative term: 24th - (a_n < 0 for n=24)
+Q9 15th term: x + 63 - (a + 14d, where d=5)
+Q10 Term is zero: 11th - (a_n = 0 for n=11)
+Q11 Term is 0: 24 - (a_n = 0 for n=24)
+Q12 Term is 88: 30 - (a_n = 88 for n=30)
+Q13 12th term: 25 - (substitute n=12 in 2n+1)
+Q14 Find k: 16/33 - (2k = 2/3 + 5k/8)
+Q15 Find a, b: a= 11, b = 4 - (common difference is -7)
+Q16 Next term: 97 - continue the pattern`,
+    action: "answer_question",
+    voiceCommand: "attempt all questions",
+    contentType: "mcq",
+    browserContext: {
+      url: "https://docs.google.com/forms/d/e/example/viewform",
+      title: "Quiz",
+      visibleText: "1 / 16 Next",
+      interactiveElements: []
+    }
+  });
+
+  assert.equal(plan.goal, "fill_form_answers");
+  const answerKeyStep = plan.steps.find((step) => step.tool === "apply_answer_key");
+  assert.ok(answerKeyStep);
+  assert.equal(answerKeyStep.answers.length, 16);
+  assert.equal(answerKeyStep.advancePages, true);
+  assert.ok(answerKeyStep.answers.some((answer) => answer.question === "Find k" && answer.option === "16/33"));
+  assert.ok(answerKeyStep.answers.some((answer) => answer.question === "Next term" && answer.option === "97"));
+});
