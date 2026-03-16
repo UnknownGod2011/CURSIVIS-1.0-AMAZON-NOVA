@@ -1,4 +1,8 @@
 import express from "express";
+import agentRouter from "./routes/agent.js";
+import voiceRouter from "./routes/voice.js";
+import planRouter from "./routes/plan.js";
+import embedRouter from "./routes/embed.js";
 import {
   alternativesForType,
   buildPrompt,
@@ -223,6 +227,12 @@ export function createApp({ textGenerator, intentRouter, optionGenerator, browse
   const planBrowserAction = browserActionPlanner ?? createBrowserActionPlanner({ generateText });
 
   app.use(express.json({ limit: "8mb" }));
+
+  // ── New modular routes ──────────────────────────────────────────────────────
+  app.use("/agent", agentRouter);
+  app.use("/voice", voiceRouter);
+  app.use("/plan", planRouter);
+  app.use("/embed", embedRouter);
 
   app.get("/health", (_req, res) => {
     res.json({ ok: true, service: "nova-agent", ts: new Date().toISOString() });
