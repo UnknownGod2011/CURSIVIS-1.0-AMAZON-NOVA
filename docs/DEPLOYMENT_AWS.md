@@ -33,7 +33,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\deploy-aws.ps1 `
   -AwsAccountId "123456789012" `
   -AwsAccessKeyId "AKIA..." `
   -AwsSecretAccessKey "your-secret" `
-  -Region "us-east-1"
+  -Region "eu-north-1"
 ```
 
 This will:
@@ -48,7 +48,7 @@ This will:
 ```powershell
 # From repo root
 $ACCOUNT = "123456789012"
-$REGION  = "us-east-1"
+$REGION  = "eu-north-1"
 $IMAGE   = "cursivis-nova-agent"
 
 aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin "$ACCOUNT.dkr.ecr.$REGION.amazonaws.com"
@@ -72,9 +72,9 @@ aws apprunner create-service `
         "RuntimeEnvironmentVariables": {
           "AWS_ACCESS_KEY_ID": "<KEY>",
           "AWS_SECRET_ACCESS_KEY": "<SECRET>",
-          "AWS_REGION": "us-east-1",
-          "NOVA_LITE_MODEL": "us.amazon.nova-2-lite-v1:0",
-          "NOVA_SONIC_MODEL": "amazon.nova-2-sonic-v1:0"
+          "AWS_REGION": "eu-north-1",
+          "BEDROCK_TEXT_MODEL_ID": "amazon.nova-lite-v1:0",
+          "BEDROCK_VOICE_MODEL_ID": "amazon.nova-2-sonic-v1:0"
         }
       }
     }

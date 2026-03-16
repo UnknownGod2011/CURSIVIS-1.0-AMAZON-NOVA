@@ -45,10 +45,10 @@ node src/server.js
 |---|---|
 | `AWS_ACCESS_KEY_ID` | AWS access key |
 | `AWS_SECRET_ACCESS_KEY` | AWS secret key |
-| `AWS_REGION` | AWS region (default: `us-east-1`) |
-| `NOVA_LITE_MODEL` | Nova 2 Lite model ID (default: `us.amazon.nova-2-lite-v1:0`) |
-| `NOVA_SONIC_MODEL` | Nova 2 Sonic model ID (default: `amazon.nova-2-sonic-v1:0`) |
-| `NOVA_ACT_API_KEY` | Nova Act API key |
+| `AWS_REGION` | AWS region (default: `eu-north-1`) |
+| `BEDROCK_TEXT_MODEL_ID` | Nova 2 Lite model ID (default: `amazon.nova-lite-v1:0`) |
+| `BEDROCK_VOICE_MODEL_ID` | Nova 2 Sonic model ID (default: `amazon.nova-2-sonic-v1:0`) |
+| `BEDROCK_EMBEDDING_MODEL_ID` | Embedding model ID (optional) |
 | `PORT` | HTTP port (default: `8080`) |
 
 ## API Endpoints
@@ -56,11 +56,15 @@ node src/server.js
 | Method | Path | Description |
 |---|---|---|
 | GET | `/health` | Health check |
-| POST | `/analyze` | Analyze selected text/image |
+| POST | `/agent` | Main agentic endpoint — structured Nova response |
+| POST | `/analyze` | Analyze selected text/image (legacy, companion uses this) |
 | POST | `/suggest-actions` | Get action suggestions |
-| POST | `/transcribe` | Transcribe audio |
-| POST | `/plan-browser-action` | Plan browser automation steps |
-| WS | `/live` | Nova 2 Sonic voice stream |
+| POST | `/voice` | Transcribe/process voice input |
+| POST | `/plan` | Generate browser action plan |
+| POST | `/embed` | Embed and rank context items |
+| POST | `/transcribe` | Transcribe audio (legacy) |
+| POST | `/plan-browser-action` | Plan browser automation steps (legacy) |
+| WS | `/live` | Nova 2 Sonic real-time voice stream |
 
 ## Docker
 

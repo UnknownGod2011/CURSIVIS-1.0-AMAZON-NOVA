@@ -1,7 +1,7 @@
 param(
     [string]$AwsAccessKeyId,
     [string]$AwsSecretAccessKey,
-    [string]$AwsRegion = "us-east-1",
+    [string]$AwsRegion = "eu-north-1",
     [string]$BackendUrl = "http://127.0.0.1:8080",
     [string]$Text = "who is the richest person in the world"
 )

@@ -2,8 +2,8 @@ param(
     [switch]$WithBridge,
     [string]$AwsAccessKeyId,
     [string]$AwsSecretAccessKey,
-    [string]$AwsRegion = "us-east-1",
-    [string]$NovaLiteModel = "us.amazon.nova-2-lite-v1:0",
+    [string]$AwsRegion = "eu-north-1",
+    [string]$NovaLiteModel = "amazon.nova-lite-v1:0",
     [string]$NovaSonicModel = "amazon.nova-2-sonic-v1:0",
     [string]$BackendUrl = "http://127.0.0.1:8080",
     [switch]$EnableStreamingTranscription,
@@ -21,7 +21,7 @@ $ErrorActionPreference = "Stop"
 
 if ($Help) {
     Write-Host "Usage:"
-    Write-Host "  powershell -ExecutionPolicy Bypass -File .\scripts\run-demo.ps1 [-WithBridge] [-AwsAccessKeyId <KEY>] [-AwsSecretAccessKey <SECRET>] [-AwsRegion us-east-1] [-BackendUrl <URL>] [-EnableStreamingTranscription] [-EnableAutoReplace]"
+    Write-Host "  powershell -ExecutionPolicy Bypass -File .\scripts\run-demo.ps1 [-WithBridge] [-AwsAccessKeyId <KEY>] [-AwsSecretAccessKey <SECRET>] [-AwsRegion eu-north-1] [-BackendUrl <URL>] [-EnableStreamingTranscription] [-EnableAutoReplace]"
     return
 }
 
@@ -49,7 +49,7 @@ if (-not $SkipCleanup) {
 # Resolve AWS credentials (param > env)
 $resolvedKeyId     = if ($AwsAccessKeyId)     { $AwsAccessKeyId }     else { $env:AWS_ACCESS_KEY_ID }
 $resolvedSecret    = if ($AwsSecretAccessKey) { $AwsSecretAccessKey } else { $env:AWS_SECRET_ACCESS_KEY }
-$resolvedRegion    = if ($AwsRegion)          { $AwsRegion }          else { $env:AWS_REGION ?? "us-east-1" }
+$resolvedRegion    = if ($AwsRegion)          { $AwsRegion }          else { $env:AWS_REGION ?? "eu-north-1" }
 
 if (-not $resolvedKeyId -or -not $resolvedSecret) {
     Write-Warning "AWS credentials not set. Set -AwsAccessKeyId / -AwsSecretAccessKey or set AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY env vars. Nova calls will fail without them."
@@ -65,6 +65,8 @@ $backendCmdParts = @(
     "`$env:AWS_ACCESS_KEY_ID='$keyIdEscaped'",
     "`$env:AWS_SECRET_ACCESS_KEY='$secretEscaped'",
     "`$env:AWS_REGION='$regionEscaped'",
+    "`$env:BEDROCK_TEXT_MODEL_ID='$liteModelEscaped'",
+    "`$env:BEDROCK_VOICE_MODEL_ID='$sonicModelEscaped'",
     "`$env:NOVA_LITE_MODEL='$liteModelEscaped'",
     "`$env:NOVA_SONIC_MODEL='$sonicModelEscaped'",
     "Set-Location -LiteralPath '$backendDir'"
